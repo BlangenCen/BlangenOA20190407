@@ -1,0 +1,50 @@
+﻿<#@ template language="C#" debug="false" hostspecific="true"#>
+<#@ include file="EF.Utility.CS.ttinclude"#><#@
+ output extension=".cs"#>
+ 
+<#
+
+CodeGenerationTools code = new CodeGenerationTools(this);
+MetadataLoader loader = new MetadataLoader(this);
+CodeRegion region = new CodeRegion(this, 1);
+MetadataTools ef = new MetadataTools(this);
+
+string inputFile = @"..\\BlangenOA.Model\\Model1.edmx";
+
+EdmItemCollection ItemCollection = loader.CreateEdmItemCollection(inputFile);
+string namespaceName = code.VsNamespaceSuggestion();
+
+EntityFrameworkTemplateFileManager fileManager = EntityFrameworkTemplateFileManager.Create(this);
+
+#>
+using BlangenOA.DALFactory;
+using BlangenOA.IBLL;
+using BlangenOA.Model;
+using BlangenOA.Model.EnumType;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BlangenOA.BLL
+{
+<#
+// Emit Entity Types
+
+foreach (EntityType entity in ItemCollection.GetItems<EntityType>().OrderBy(e => e.Name))
+{
+    //fileManager.StartNewFile(entity.Name + "RepositoryExt.cs");
+    //BeginNamespace(namespaceName, code);    
+#>	
+	public partial class <#=entity.Name#>Bll : BaseBll<<#=entity.Name#>>,I<#=entity.Name#>Bll
+    {
+		 public override void SetCurrentDal()
+        {
+            this.CurrentDal = this.DbSession.<#=entity.Name#>Dal;
+        }
+    }   
+<#}#>
+	
+}

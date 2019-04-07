@@ -1,0 +1,104 @@
+﻿@model BlangenOA.Model.RoleInfo
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShowEdit</title>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script type="text/javascript">
+        //供父窗体提交表单用
+        function subForm() {
+            $('#editForm').submit();
+        };
+        //单击编辑后
+        function afterEdit(data) {
+            //子窗体调用父窗体的方法
+            window.parent.afterEdit(data);
+        };
+        ////填满编辑表单
+        //function fillEditForm(ID) {
+        //    $.post('/RoleInfo/FindRoleInfo', { 'ID': ID }, function (data) {
+        //        $('#editID').val(data.ID);
+        //        //记得转化日期 Date(毫秒数)-->DateTime
+        //        $('#editSubTime').val(ChangeDateFormat(data.SubTime));
+        //        $('#editFlag').val(data.DelFlag);
+        //        $('#editRoleName').val(data.RoleName);
+        //        $('#editRemark').val(data.Remark);
+        //        $('#editSort').val(data.Sort);
+        //    });
+        //};
+        //表单检验
+        function validateInfo() {
+            $('#editForm').validate({
+                //验证规则
+                rules: {
+                    RoleName: "required",//表示对哪个表单元素进行校验，要写具体的表单元素的name属性的值
+                    Remark: {
+                        required: true
+                    },
+                    Sort: {
+                        required: true
+                    }
+                },
+                //不符合规则时,显示的提示
+                messages: {
+                    RoleName: '请输入角色名',
+                    Remark: {
+                        required: '请输入备注'
+                    },
+                    Sort: {
+                        required: '请输入排序'
+                    }
+                }
+            });
+        };
+        //将序列化成json格式后日期(毫秒数)转成日期格式
+        function ChangeDateFormat(milliDate) {
+            //alert(milliDate);
+            var date = new Date(parseInt(milliDate.replace('/Date(', '').replace(')/', ''), 10));
+            //alert(date);
+            //alert(date.getMonth());//月份会少1(向下取整？)所以后面要加1
+            var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1;
+            var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+            return date.getFullYear() + '-' + month + '-' + currentDate;
+        };
+        function afterEdit(data) {
+            window.parent.afterEdit(data);
+        };
+    </script>
+    <style type="text/css">
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <!---------------------编辑数据--------------------->
+    @using (Ajax.BeginForm("EditRoleInfo", "RoleInfo", null, new AjaxOptions() { HttpMethod = "post", OnSuccess = "afterEdit" }, new { id = "editForm" }))
+    {
+        <!--隐藏域存储着用户不能修改的数据-->
+        <input type="hidden" name="ID" id="editID" value="@ViewBag.roleInfo.ID" />
+        <input type="hidden" name="SubTime" id="editSubTime" value="@ViewBag.roleInfo.SubTime" />
+        <input type="hidden" name="DelFlag" id="editDelFlag" value="@ViewBag.roleInfo.DelFlag" />
+        <table>
+            <tr>
+                <td>用户名&nbsp;<input type="text" name="RoleName" id="editRoleName" value="@ViewBag.roleInfo.RoleName" /></td>
+            </tr>
+            <tr>
+                <td>备注&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Remark" id="editRemark" value="@ViewBag.roleInfo.Remark" /></td>
+            </tr>
+            <tr>
+                <td>排序&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Sort" id="editSort" value="@ViewBag.roleInfo.Sort" /></td>
+            </tr>
+        </table>
+    }
+</body>
+</html>

@@ -1,0 +1,432 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>用户管理系统</title>
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+    <script src="~/Scripts/datapattern.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <style type="text/css">
+        .error {
+            color: red;
+        }
+
+        .frameDiv {
+            overflow: hidden;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#addDiv').css('display', 'none');
+            $('#editDiv').css('display', 'none');
+            $('#setUserRoleDiv').css('display', 'none');
+            $('#setUserActionDiv').css('display', 'none');
+            //搜索
+            $('#btnSearch').click(function () {
+                var pars = {
+                    name: $('#txtSearchName').val(),
+                    remark: $('#txtSearchRemark').val()
+                };
+                loadData(pars);
+            });
+            //加载数据
+            loadData();
+        });
+        function loadData(pars) {
+            $('#tt').datagrid({
+                url: '/UserInfo/GetUserInfoList',
+                title: '用户数据表格',
+                width: 800,
+                height: 500,
+                fitColumns: true,//列自适应
+                nowrap: false,
+                idField: 'ID',//主键列的列名
+                loadMsg: '正在加载用户的信息...',
+                pagination: true,//是否有分页
+                singleSelect: false,//是否单行选择
+                pageSize: 10,//初始页大小，一页多少条数据
+                pageNumber: 1,//当前页，默认的
+                pageList: [5, 10, 20],//供用户选择的页大小
+                queryParams: pars,//往后台传递参数
+                //列
+                columns: [[{
+                    field: 'ck', checkbox: true, align: 'left', width: 50//行数据前的复选框
+                }, {
+                    field: 'ID', title: '编号', width: 80//field数据列名 title显示列名
+                }, {
+                    field: 'UName', title: '姓名', width: 120
+                }, {
+                    field: 'UPwd', title: '密码', width: 120
+                }, {
+                    field: 'Remark', title: '备注', width: 120
+                }, {
+                    field: 'SubTime', title: '时间', width: 120, align: 'left',//默认左对齐
+                    formatter: function (value, row, index) {
+                        return (eval(value.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"))).pattern("yyyy-MM-dd");
+                    }
+                }
+                ]],
+                //工具栏
+                toolbar: [{
+                    id: 'btnDelete',
+                    text: '删除',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        //单击按钮事件
+                        deleteInfo();
+                    }
+                }, {
+                    id: 'btnAdd',
+                    text: '添加',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        addInfo();
+                    }
+                }, {
+                    id: 'btnEdit',
+                    text: '编辑',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        editInfo();
+                    }
+                }, {
+                    id: 'btnsetUserRole',
+                    text: '设置用户角色',
+                    iconCls: 'icon-man',
+                    handler: function () {
+                        setUserRole();
+                    }
+                }, {
+                    id: 'btnsetUserAction',
+                    text: '设置用户权限',
+                    iconCls: 'icon-lock',
+                    handler: function () {
+                        setUserAction();
+                    }
+                }]
+            });
+        };
+        //删除数据
+        function deleteInfo() {
+            //获取所选择的行
+            var rows = $('#tt').datagrid('getSelections');
+            if (!rows || rows.length == 0) {
+                $.messager.alert("提醒", "请选择要删除的记录!", "error");
+                return;
+            }
+            $.messager.confirm("提示", "确定要删除数据吗？", function (result) {
+                if (result) {
+                    //获取全部ID,转化格式为1,2,3
+                    var strID = '';
+                    for (var i = 0; i < rows.length; i++) {
+                        strID += rows[i].ID + ',';
+                    }
+                    //去掉最后一个','
+                    strID.substring(0, strID.length - 1);
+                    $.post('/UserInfo/DeleteUserInfo', { "strID": strID }, function (data) {
+                        if (data == 'ok') {
+                            $.messager.alert("提醒", "删除成功!");
+                            //重新加载并留在上次操作页面
+                            $('#tt').datagrid('reload');
+                            //清除上次的操作记录
+                            $('#tt').datagrid('clearSelections');
+                        } else {
+                            $.messager.alert("提醒", "删除失败!", "error");
+                        }
+                    });
+                }
+            });
+        };
+        //添加数据
+        function addInfo() {
+            $("#addDiv").css("display", "block");
+            $('#addDiv').dialog({
+                title: '添加用户数据',
+                width: 300,
+                height: 200,
+                //折叠
+                collapsible: true,
+                //最大化
+                maximizable: true,
+                //可手动调大小
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '添加',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        //表单校验
+                        validateInfo($("#addForm"));
+                        //提交表单
+                        $("#addForm").submit();
+                    }
+                }, {
+                    text: '取消',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#addDiv').dialog('close');
+                    }
+                }, {
+                    text: '清空',
+                    handler: function () {
+                        $('#addForm input').val('');
+                    }
+                }]
+            });
+        };
+        //完成添加后调用的方法
+        function afterAdd(data) {
+            if (data == 'ok') {
+                $('#tt').datagrid('reload');
+                //清空文本框数据
+                $('#addForm input').val('');
+                $('#addDiv').dialog('close');
+                $.messager.alert("提醒", "添加成功!");
+            }
+            else {
+                $.messager.alert("提醒", "添加失败!", "error");
+            }
+        };
+        //编辑数据
+        function editInfo() {
+            var rows = $('#tt').datagrid('getSelections');//获取所选择的行
+            if (rows.length != 1) {
+                $.messager.alert("提醒", "请选择(一行)数据!", "error");
+                return;
+            }
+            $.post('/UserInfo/FindUserInfo', { 'ID': rows[0].ID }, function (data) {
+                $('#editID').val(data.ID);
+                //记得转化日期 Date(毫秒数)-->DateTime
+                $('#editSubTime').val(ChangeDateFormat(data.SubTime));
+                $('#editFlag').val(data.DelFlag);
+                $('#editUName').val(data.UName);
+                $('#editUPwd').val(data.UPwd);
+                $('#editRemark').val(data.Remark);
+                $('#editSort').val(data.Sort);
+            });
+            $('#editDiv').css('display', 'block');
+            $('#editDiv').dialog({
+                title: '编辑用户数据',
+                width: 300,
+                height: 200,
+                collapsible: true,
+                maximizable: true,
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '保存',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        //表单校验
+                        validateInfo($("#editForm"));
+                        $("#editForm").submit();//提交表单
+                    }
+                }, {
+                    text: '取消',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#editDiv').dialog('close');
+                    }
+                }]
+            });
+        };
+        //编辑数据后调用的方法
+        function afterEdit(data) {
+            if (data == 'ok') {
+                //这里不用清空本文框,因为每次编辑都重新赋值了
+                $('#tt').datagrid('reload');
+                $('#editDiv').dialog('close');
+                $.messager.alert("提醒", "编辑完成!");
+            }
+            else {
+                $.messager.alert("提醒", "编辑失败!", "error");
+            }
+        };
+        //表单检验,参数为jQuery对象:$(form)
+        function validateInfo(control) {
+            control.validate({
+                //验证规则
+                rules: {
+                    UName: "required",//表示对哪个表单元素进行校验，要写具体的表单元素的name属性的值
+                    Remark: {
+                        required: true
+                    },
+                    UPwd: {
+                        required: true,
+                        minlength: 5
+                    },
+                    Sort: {
+                        required: true
+                    }
+                },
+                //不符合规则时,显示的提示
+                messages: {
+                    UName: '请输入用户名',
+                    Remark: {
+                        required: '请输入备注'
+                    },
+                    UPwd: {
+                        required: '请输入密码',
+                        minlength: '密码不能小于5个字符'
+                    },
+                    Sort: {
+                        required: '请输入排序'
+                    }
+                }
+            });
+        };
+        //将序列化成json格式后日期(毫秒数)转成日期格式
+        function ChangeDateFormat(milliDate) {
+            //alert(milliDate);
+            var date = new Date(parseInt(milliDate.replace('/Date(', '').replace(')/', ''), 10));
+            //alert(date);
+            //alert(date.getMonth());//月份会少1(向下取整？)所以后面要加1
+            var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1;
+            var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+            return date.getFullYear() + '-' + month + '-' + currentDate;
+        };
+        //设置用户角色
+        function setUserRole() {
+            var rows = $('#tt').datagrid('getSelections');//获取所选择的行
+            if (rows.length != 1) {
+                $.messager.alert("提醒", "请选择(一行)数据!", "error");
+                return;
+            }
+            //将选中的编号传递到方法中
+            $('#setUserRoleFrame').attr('src', '/UserInfo/ShowUserRole?id=' + rows[0].ID);
+            $('#setUserRoleDiv').css('display', 'block');
+            $('#setUserRoleDiv').dialog({
+                title: '设置用户角色',
+                width: 300,
+                height: 350,
+                collapsible: true,
+                maximizable: true,
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '保存',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        var childWindow = $('#setUserRoleFrame')[0].contentWindow;
+                        childWindow.submit();
+                    }
+                }, {
+                    text: '取消',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#setUserRoleDiv').dialog('close');
+                    }
+                }]
+            });
+        };
+        //完成设置用户角色后调用的方法
+        function afterSetUserRole(data) {
+            if (data == 'ok') {
+                $('#setUserRoleDiv').dialog('close');
+                $.messager.alert("提醒", "设置成功!");
+            }
+            else {
+                $.messager.alert("提醒", "设置失败!", "error");
+            }
+        };
+        //设置用户权限
+        function setUserAction() {
+            var rows = $('#tt').datagrid('getSelections');//获取所选择的行
+            if (rows.length != 1) {
+                $.messager.alert("提醒", "请选择(一行)数据!", "error");
+                return;
+            }
+            //将选中的编号传递到方法中
+            $('#setUserActionFrame').attr('src', '/UserInfo/ShowUserAction?userID=' + rows[0].ID);
+            $('#setUserActionDiv').css('display', 'block');
+            $('#setUserActionDiv').dialog({
+                title: '设置用户权限',
+                width: 900,
+                height: 600,
+                collapsible: true,
+                maximizable: true,
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '关闭',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#setUserActionDiv').dialog('close');
+                    }
+                }]
+            });
+        };
+    </script>
+</head>
+<body>
+    <div>
+        <!---------------------搜索数据--------------------->
+        用户名:<input type="text" id="txtSearchName" />&nbsp;&nbsp;备注:<input type="text" id="txtSearchRemark" /><a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:80px" id="btnSearch">Search</a>
+        <!---------------------展示数据--------------------->
+        <table id="tt" style="width: 700px;" title="标题，可以使用代码进行初始化，也可以使用这种属性的方式" iconcls="icon-edit"></table>
+    </div>
+    <!---------------------添加数据--------------------->
+    <div id="addDiv">
+        @using (Ajax.BeginForm("AddUserInfo", "UserInfo", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "afterAdd" }, new { id = "addForm" }))
+        {
+            <table>
+                <tr>
+                    <td>用户名&nbsp;<input type="text" name="UName" /></td>
+                </tr>
+                <tr>
+                    <td>密码&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="UPwd" /></td>
+                </tr>
+                <tr>
+                    <td>备注&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Remark" /></td>
+                </tr>
+                <tr>
+                    <td>排序&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Sort" /></td>
+                </tr>
+            </table>
+        }
+    </div>
+    <!---------------------编辑数据--------------------->
+    <div id="editDiv">
+        @using (Ajax.BeginForm("EditUserInfo", "UserInfo", null, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "afterEdit" }, new { id = "editForm" }))
+        {
+            <!--隐藏域存储着用户不能修改的数据-->
+            <input type="hidden" name="ID" id="editID" />
+            <input type="hidden" name="SubTime" id="editSubTime" />
+            <input type="hidden" name="DelFlag" id="editDelFlag" />
+            <table>
+                <tr>
+                    <td>用户名&nbsp;<input type="text" name="UName" id="editUName" /></td>
+                </tr>
+                <tr>
+                    <td>密码&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="UPwd" id="editUPwd" /></td>
+                </tr>
+                <tr>
+                    <td>备注&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Remark" id="editRemark" /></td>
+                </tr>
+                <tr>
+                    <td>排序&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="Sort" id="editSort" /></td>
+                </tr>
+            </table>
+        }
+    </div>
+    <!---------------------设置用户角色--------------------->
+    <div id="setUserRoleDiv" class="frameDiv">
+        <iframe id="setUserRoleFrame" style="width:100%;height:100%;"></iframe>
+    </div>
+    <!---------------------设置用户权限--------------------->
+    <div id="setUserActionDiv" class="frameDiv">
+        <iframe id="setUserActionFrame" style="width:100%;height:100%;"></iframe>
+    </div>
+</body>
+</html>

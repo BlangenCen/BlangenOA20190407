@@ -1,0 +1,146 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>权限管理系统</title>
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+    <script src="~/Scripts/datapattern.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            //加载数据
+            loadData();
+        });
+        //加载数据
+        function loadData(pars) {
+            $('#tt').datagrid({
+                url: '/ActionInfo/GetActionInfoList',
+                title: '用户数据表格',
+                width: 750,
+                height: 500,
+                fitColumns: true,//列自适应
+                nowrap: false,
+                idField: 'ID',//主键列的列名
+                loadMsg: '正在加载用户的信息...',
+                pagination: true,//是否有分页
+                singleSelect: false,//是否单行选择
+                pageSize: 10,//初始页大小，一页多少条数据
+                pageNumber: 1,//当前页，默认的
+                pageList: [5, 10, 20],//供用户选择的页大小
+                queryParams: pars,//往后台传递参数
+                //列
+                columns: [[{
+                    field: 'ck', checkbox: true, align: 'left', width: 50//行数据前的复选框
+                }, {
+                    field: 'ID', title: '编号', width: 80//field数据列名 title显示列名
+                }, {
+                    field: 'ActionInfoName', title: '权限名', width: 100
+                }, {
+                    field: 'ActionTypeEnum', title: '权限类型', width: 100,
+                    formatter: function (value, row, index) {
+                        return value == 0 ? '普通权限' : '菜单权限';
+                    }
+                },
+                {
+                    field: 'HttpMethod', title: '请求方法', width: 100
+                },
+                {
+                    field: 'Url', title: 'Url', width: 200
+                }, {
+                    field: 'Remark', title: '备注', width: 200
+                }, {
+                    field: 'SubTime', title: '时间', width: 120, align: 'left',//默认左对齐
+                    formatter: function (value, row, index) {
+                        return (eval(value.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"))).pattern("yyyy-MM-dd");
+                    }
+                }, {
+                    field: 'test', title: '测试', width: 80, align: 'left',//默认左对齐
+                    formatter: function (value, row, index) {
+                        return '<a href="javascript:void(0)" class="details" ids="' + row.ID + '">测试</a>'
+                    }
+                }]],
+                //表格加载完执行
+                onLoadSuccess: function () {
+                    $('.details').click(function () {
+                        alert($(this).attr('ids'));
+                    });
+                },
+                //工具栏
+                toolbar: [{
+                    id: 'btnDelete',
+                    text: '删除',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        //单击按钮事件
+                        deleteInfo();
+                    }
+                }, {
+                    id: 'btnAdd',
+                    text: '添加',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        addInfo();
+                    }
+                }, {
+                    id: 'btnEdit',
+                    text: '编辑',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        editInfo();
+                    }
+                }]
+            });
+        };
+        //表单检验,参数为jQuery对象:$(form)
+        function validateInfo(control) {
+            control.validate({
+                //验证规则
+                rules: {
+                    UName: "required",//表示对哪个表单元素进行校验，要写具体的表单元素的name属性的值
+                    Remark: {
+                        required: true
+                    },
+                    UPwd: {
+                        required: true,
+                        minlength: 5
+                    },
+                    Sort: {
+                        required: true
+                    }
+                },
+                //不符合规则时,显示的提示
+                messages: {
+                    UName: '请输入用户名',
+                    Remark: {
+                        required: '请输入备注'
+                    },
+                    UPwd: {
+                        required: '请输入密码',
+                        minlength: '密码不能小于5个字符'
+                    },
+                    Sort: {
+                        required: '请输入排序'
+                    }
+                }
+            });
+        };
+    </script>
+</head>
+<body>
+    <div>
+        <!---------------------展示数据--------------------->
+        <table id="tt" style="width: 700px;" title="标题，可以使用代码进行初始化，也可以使用这种属性的方式" iconcls="icon-edit"></table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+    <style type="text/css">
+        .txt {
+            color: blue;
+            font: bold xx-large DFKai-SB;
+            float: left;
+            margin: 25px 100px;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            bindClick();
+        });
+        function bindClick() {
+            $('.showDeatil').click(function () {
+                //tabs的jQuery对象
+                var $tabs = $('#tt');
+                //标签的标题
+                var title = $(this).text();
+                //判断是否已经存在标签
+                if ($tabs.tabs('exists', title)) {
+                    //存在则跳转
+                    $tabs.tabs('select', title);
+                    return;
+                }
+                //不存在则新增
+                var url = $(this).attr('url');
+                $tabs.tabs('add', {
+                    title: title,
+                    content: showContent(url),
+                    closable: true
+                });
+            });
+        };
+        //用于显示按钮对应url的内容
+        function showContent(url) {
+            var str = '<iframe src="' + url + '" style="height:100%;width:100%;border:0px;"></iframe>';
+            return str;
+        };
+    </script>
+    <title>BlangenCen主页</title>
+</head>
+<body class="easyui-layout">
+    <!--顶部-->
+    <div data-options="region:'north',border:false" style="height:80px;background:#B3DFDA;padding:10px;background-image:url(/Content/Images/bg3.png)">
+        <img src="~/Content/Images/电竞社.png" style="height:60px;width:250px;float:left;" />
+        <span class="txt">BlangenCen独家</span>
+    </div>
+    <!--菜单-->
+    <div data-options="region:'west',split:true,title:'West'" style="width:150px;padding:5px;">
+        <div class="easyui-accordion">
+            <div title="用户管理" data-options="iconCls:'icon-ok'" style="overflow:auto;padding:5px;">
+                <a class="showDeatil" href="javascript:void(0)" url="/UserInfo/Index">长泽茉莉奈</a>
+            </div>
+            <div title="角色管理" data-options="iconCls:'icon-help'" style="padding:5px;">
+                <a class="showDeatil" href="javascript:void(0)" url="/RoleInfo/Index">阿丽莎白</a>
+            </div>
+        </div>
+    </div>
+    <!--底部-->
+    <div data-options="region:'south',border:false" style="height:50px;padding:10px;background-color:aquamarine">
+        <div style="text-align:center;">
+            Copyright ? 2019 BlangenCen
+        </div>
+    </div>
+    <!--内容-->
+    <div data-options="region:'center',title:'Center'">
+        <!--tab-->
+        <div id="tt" class="easyui-tabs" fit="true"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects>
+
+  <object name="UserInfoBll" type="BlangenOA.BLL.UserInfoBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+  <object name="RoleInfoBll" type="BlangenOA.BLL.RoleInfoBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+  <object name="ActionInfoBll" type="BlangenOA.BLL.ActionInfoBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+  <object name="R_UserInfo_ActionInfoBll" type="BlangenOA.BLL.R_UserInfo_ActionInfoBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+  <object name="BooksBll" type="BlangenOA.BLL.BooksBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+  <object name="SearchDetailsBll" type="BlangenOA.BLL.SearchDetailsBll, BlangenOA.BLL" singleton="false" >
+  </object>
+  
+  <object name="KeyWordsRankBll" type="BlangenOA.BLL.KeyWordsRankBll, BlangenOA.BLL" singleton="false" >
+  </object>
+
+</objects>

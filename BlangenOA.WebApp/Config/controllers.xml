@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects xmlns="http://www.springframework.net">
+  
+  <object  type="BlangenOA.WebApp.Controllers.HomeController, BlangenOA.WebApp" singleton="false" >
+    <property name="UserInfoBll" ref="UserInfoBll" />
+  </object>
+  
+  <object  type="BlangenOA.WebApp.Controllers.UserInfoController, BlangenOA.WebApp" singleton="false" >
+    <property name="UserInfoBll" ref="UserInfoBll" />
+    <property name="RoleInfoBll" ref="RoleInfoBll" />
+    <property name="ActionInfoBll" ref="ActionInfoBll" />
+    <property name="R_UserInfo_ActionInfoBll" ref="R_UserInfo_ActionInfoBll" />
+  </object>
+  
+  <object  type="BlangenOA.WebApp.Controllers.LoginController, BlangenOA.WebApp" singleton="false" >
+    <property name="UserInfoBll" ref="UserInfoBll" />
+  </object>
+
+  <object  type="BlangenOA.WebApp.Controllers.RoleInfoController, BlangenOA.WebApp" singleton="false" >
+    <property name="RoleInfoBll" ref="RoleInfoBll" />
+    <property name="ActionInfoBll" ref="ActionInfoBll" />
+  </object>
+
+  <object  type="BlangenOA.WebApp.Controllers.ActionInfoController, BlangenOA.WebApp" singleton="false" >
+    <property name="ActionInfoBll" ref="ActionInfoBll" />
+  </object>
+
+  <object  type="BlangenOA.WebApp.Controllers.SearchController, BlangenOA.WebApp" singleton="false" >
+    <property name="BooksBll" ref="BooksBll" />
+    <property name="SearchDetailsBll" ref="SearchDetailsBll" />
+    <property name="KeyWordsRankBll" ref="KeyWordsRankBll" />
+  </object>
+  
+</objects>

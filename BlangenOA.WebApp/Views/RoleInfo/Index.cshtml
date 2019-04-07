@@ -1,0 +1,308 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>角色管理系统</title>
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+    <script src="~/Scripts/datapattern.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#addDiv').css('display', 'none');
+            $('#editDiv').css('display', 'none');
+            $('#setRoleActionDiv').css('display', 'none');
+            loadData();
+        });
+        //加载数据表格
+        function loadData(pars) {
+            $('#tt').datagrid({
+                url: '/RoleInfo/GetRoleInfoList',
+                title: '角色数据表格',
+                width: 700,
+                height: 500,
+                fitColumns: true,//列自适应
+                nowrap: false,
+                idField: 'ID',//主键列的列名
+                loadMsg: '正在加载角色的信息...',
+                pagination: true,//是否有分页
+                singleSelect: false,//是否单行选择
+                pageSize: 10,//初始页大小，一页多少条数据
+                pageNumber: 1,//当前页，默认的
+                pageList: [5, 10, 20],//供用户选择的页大小
+                queryParams: pars,//往后台传递参数
+                //列
+                columns: [[{
+                    field: 'ck', checkbox: true, align: 'left', width: 50//行数据前的复选框
+                }, {
+                    field: 'ID', title: '编号', width: 80//field数据列名 title显示列名
+                }, {
+                    field: 'RoleName', title: '角色名', width: 120
+                }, {
+                    field: 'Remark', title: '备注', width: 120
+                }, {
+                    field: 'SubTime', title: '时间', width: 120, align: 'left',//默认左对齐
+                    formatter: function (value, row, index) {
+                        return (eval(value.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"))).pattern("yyyy-MM-dd");
+                    }
+                }, {
+                    field: 'Sort', title: '排序', width: 120
+                }]],
+                //工具栏
+                toolbar: [{
+                    id: 'btnDelete',
+                    text: '删除',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        //单击按钮事件
+                        deleteInfo();
+                    }
+                }, {
+                    id: 'btnAdd',
+                    text: '添加',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        addInfo();
+                    }
+                }, {
+                    id: 'btnEdit',
+                    text: '编辑',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        editInfo();
+                    }
+                }, {
+                    id: 'btnsetRoleAction',
+                    text: '设置角色权限',
+                    iconCls: 'icon-lock',
+                    handler: function () {
+                        setRoleAction();
+                    }
+                }]
+            });
+        };
+        //添加
+        function addInfo() {
+            $("#addDiv").css("display", "block");
+            $('#addDiv').dialog({
+                title: '添加角色数据',
+                width: 300,
+                height: 400,
+                //折叠
+                collapsible: true,
+                //最大化
+                maximizable: true,
+                //可手动调大小
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '添加',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        //表示获取了嵌入在iframe中的子窗体的window对象。
+                        var childWindow = $("#addFrame")[0].contentWindow;
+                        //调用子窗体的表单校验
+                        childWindow.validateInfo();
+                        //调用子窗体中的方法，完成表单的提交。
+                        childWindow.subForm();
+                    }
+                }, {
+                    text: '取消',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#addDiv').dialog('close');
+                    }
+                }, {
+                    text: '清空',
+                    handler: function () {
+                        //清空子窗体中的添加表单
+                        clearAddForm();
+                    }
+                }]
+            });
+        };
+        //完成添加后调用的方法
+        function afterAdd(data) {
+            if (data == 'ok') {
+                //清空子窗体中的添加表单
+                clearAddForm();
+                $('#tt').datagrid('reload');
+                $('#addDiv').dialog('close');
+                $.messager.alert("提醒", "添加成功!");
+            }
+            else {
+                $.messager.alert("提醒", "添加失败!", "error");
+            }
+        };
+        //清空子窗体中的添加表单
+        function clearAddForm() {
+            //获取子窗体
+            var childWindow = $("#addFrame")[0].contentWindow;
+            //清空添加表单
+            childWindow.clearAddForm();
+        };
+        //删除数据
+        function deleteInfo() {
+            //获取所选择的行
+            var rows = $('#tt').datagrid('getSelections');
+            if (!rows || rows.length == 0) {
+                $.messager.alert("提醒", "请选择要删除的记录!", "error");
+                return;
+            }
+            $.messager.confirm("提示", "确定要删除数据吗？", function (result) {
+                if (result) {
+                    //获取全部ID,转化格式为1,2,3
+                    var strID = '';
+                    for (var i = 0; i < rows.length; i++) {
+                        strID += rows[i].ID + ',';
+                    }
+                    //去掉最后一个','
+                    strID.substring(0, strID.length - 1);
+                    $.post('/RoleInfo/DeleteRoleInfo', { "strID": strID }, function (data) {
+                        if (data == 'ok') {
+                            $.messager.alert("提醒", "删除成功!");
+                            //重新加载并留在上次操作页面
+                            $('#tt').datagrid('reload');
+                            //清除上次的操作记录
+                            $('#tt').datagrid('clearSelections');
+                        } else {
+                            $.messager.alert("提醒", "删除失败!", "error");
+                        }
+                    });
+                }
+            });
+        };
+        //编辑数据
+        function editInfo() {
+            var rows = $('#tt').datagrid('getSelections');//获取所选择的行
+            if (rows.length != 1) {
+                $.messager.alert("提醒", "请选择(一行)数据!", "error");
+                return;
+            }
+            $('#editFrame').attr('src', '/RoleInfo/ShowEdit?id=' + rows[0].ID);
+            //////表示获取了嵌入在iframe中的子窗体的window对象。
+            //var childWindow = $("#editFrame")[0].contentWindow;
+            ////填满编辑表单
+            //childWindow.fillEditForm(rows[0].ID);
+            //显示编辑表单
+            $('#editDiv').css('display', 'block');
+            $('#editDiv').dialog({
+                title: '编辑用户数据',
+                width: 300,
+                height: 400,
+                collapsible: true,
+                maximizable: true,
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '保存',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        //表示获取了嵌入在iframe中的子窗体的window对象。
+                        var childWindow = $("#editFrame")[0].contentWindow;
+                        //调用子窗体的表单校验
+                        childWindow.validateInfo();
+                        //调用子窗体中的方法，完成表单的提交。
+                        childWindow.subForm();
+                    }
+                }, {
+                    text: '取消',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#editDiv').dialog('close');
+                    }
+                }]
+            });
+        };
+        //编辑数据后调用的方法
+        function afterEdit(data) {
+            if (data == 'ok') {
+                //这里不用清空本文框,因为每次编辑都重新赋值了
+                $('#tt').datagrid('reload');
+                $('#editDiv').dialog('close');
+                $.messager.alert("提醒", "编辑完成!");
+            }
+            else {
+                $.messager.alert("提醒", "编辑失败!", "error");
+            }
+        };
+        //设置角色权限
+        function setRoleAction() {
+            var rows = $('#tt').datagrid('getSelections');//获取所选择的行
+            if (rows.length != 1) {
+                $.messager.alert("提醒", "请选择(一行)数据!", "error");
+                return;
+            }
+            //将选中的编号传递到方法中
+            $('#setRoleActionFrame').attr('src', '/RoleInfo/ShowRoleAction?roleID=' + rows[0].ID);
+            $('#setRoleActionDiv').css('display', 'block');
+            $('#setRoleActionDiv').dialog({
+                title: '设置用户权限',
+                width: 800,
+                height: 600,
+                collapsible: true,
+                maximizable: true,
+                resizable: false,
+                modal: true,
+                buttons: [{
+                    text: '保存',
+                    iconCls: 'icon-ok',
+                    handler: function () {
+                        var childWindow = $('#setRoleActionFrame')[0].contentWindow;
+                        childWindow.submit();
+                    }
+                }, {
+                    text: '关闭',
+                    iconCls: 'icon-cancel',
+                    handler: function () {
+                        $('#setRoleActionDiv').dialog('close');
+                    }
+                }]
+            });
+        };
+        //完成设置角色权限后调用的方法
+        function afterSetRoleAction(data) {
+            if (data == 'ok') {
+                $('#setRoleActionDiv').dialog('close');
+                $.messager.alert("提醒", "设置成功!");
+            }
+            else {
+                $.messager.alert("提醒", "设置失败!", "error");
+            }
+        };
+    </script>
+    <style type="text/css">
+        .frameDiv {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <!---------------------展示数据--------------------->
+        <table id="tt" style="width: 700px;" title="标题，可以使用代码进行初始化，也可以使用这种属性的方式" iconcls="icon-edit"></table>
+    </div>
+    <!---------------------添加数据--------------------->
+    <div id="addDiv">
+        <iframe id="addFrame" src="/RoleInfo/ShowAdd" style="width:100%;height:100%;"></iframe>
+    </div>
+    <!---------------------编辑数据--------------------->
+    <div id="editDiv">
+        <iframe id="editFrame" style="width:100%;height:100%;"></iframe>
+    </div>
+    <!---------------------设置角色权限--------------------->
+    <div id="setRoleActionDiv" class="frameDiv">
+        <iframe id="setRoleActionFrame" style="width:100%;height:100%;"></iframe>
+    </div>
+</body>
+</html>

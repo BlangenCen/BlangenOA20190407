@@ -1,0 +1,147 @@
+﻿
+@{
+    Layout = null;
+    UserInfo userInfo = ViewBag.userInfo;
+}
+@using BlangenOA.Model
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShowUserAction</title>
+    <link href="~/Content/tableStyle.css" rel="stylesheet" />
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            //分配权限
+            bindRadioClickEvent();
+            //清除权限
+            bindBtnClearClickEvent();
+        });
+        //给radio绑定单击事件-->单击按钮即可完成权限分配
+        function bindRadioClickEvent() {
+            $('.selectActions').click(function () {
+                var actionID = $(this).attr('ids');
+                var isPass = $(this).val();
+                $.post("/UserInfo/SetUserAction", { "userID": @userInfo.ID, "actionID": actionID, "isPass": isPass }, function (data) {
+                    if (data == 'ok') {
+                        showMsg('权限分配成功');
+                    }
+                    else {
+                        showMsg('权限分配失败');
+                    }
+                });
+            });
+        };
+        //清除权限
+        function bindBtnClearClickEvent() {
+             $('.btnClear').click(function () {
+                 var actionID = $(this).attr('ids');
+                 var $this = $(this);
+                 $.post("/UserInfo/ClearUserAction", { "userID": @userInfo.ID, "actionID": actionID }, function (data) {
+                     var serverData = data.split(':');
+                     if (serverData[0] == 'ok') {
+                         $this.parent().find('.selectActions').removeAttr('checked');
+                     }
+                     showMsg(serverData[1]);
+                });
+            });
+        };
+        //右下角显示信息
+        function showMsg(msg) {
+            $.messager.show({
+                title: '提示',
+                msg: msg,
+                showType: 'show'
+            });
+        };
+    </script>
+</head>
+<body>
+    <div>
+        为<span style="color:red;font-size:xx-large;">@userInfo.UName</span>分配权限
+        <hr />
+        <table>
+            <tr>
+                <th>编号</th>
+                <th>权限名</th>
+                <th>URL</th>
+                <th>HttpMethod</th>
+                <th>权限类型</th>
+                <th>操作</th>
+            </tr>
+            @{
+                List<R_UserInfo_ActionInfo> userActionList = ViewBag.userActionList;
+                List<ActionInfo> actionList = ViewBag.actionList;
+                foreach (var action in actionList)
+                {
+                    //用于lable标签（其实简单一点用label包裹住就好了- -）
+                    var actionName = "ok_" + action.ID;
+                    var noActionName = "no_" + action.ID;
+                    <tr>
+                        <td>@action.ID</td>
+                        <td>@action.ActionInfoName</td>
+                        <td>@action.Url</td>
+                        <td>@action.HttpMethod</td>
+                        <td>@(action.ActionTypeEnum == 0 ? "普通权限" : "菜单权限")</td>
+                        <td>
+                            @{
+                                var isExist = (from uA in userActionList
+                                               where uA.ActionInfoID == action.ID
+                                               select uA).FirstOrDefault();
+                                //判断用户是否拥有此权限
+                                if (isExist != null)
+                                {
+                                    var isPass = isExist.IsPass;
+                                    //判断用户的此权限允许/禁止
+                                    if (isPass)
+                                    {
+                                        <input id="@actionName" type="radio" name="@actionName" value="true" checked="checked" ids="@action.ID" class="selectActions" />
+                                        <label for="@actionName">
+                                            允许
+                                        </label>
+                                        <input id="@noActionName" type="radio" name="@actionName" value="false" ids="@action.ID" class="selectActions" />
+                                        <label for="@noActionName">
+                                            禁止
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <input id="@actionName" type="radio" name="@actionName" value="true" ids="@action.ID" class="selectActions" />
+                                        <label for="@actionName">
+                                            允许
+                                        </label>
+                                        <input id="@noActionName" type="radio" name="@actionName" value="false" checked="checked" ids="@action.ID" class="selectActions" />
+                                        <label for="@noActionName">
+                                            禁止
+                                        </label>
+                                    }
+                                }
+                                else
+                                {
+                                    <input id="@actionName" type="radio" name="@actionName" value="true" ids="@action.ID" class="selectActions" />
+                                    <label for="@actionName">
+                                        允许
+                                    </label>
+                                    <input id="@noActionName" type="radio" name="@actionName" value="false" ids="@action.ID" class="selectActions" />
+                                    <label for="@noActionName">
+                                        禁止
+                                    </label>
+                                }
+                                <input class="btnClear" ids="@action.ID" type="button" value="清除" style="margin-left:10px;" />
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+</body>
+</html>

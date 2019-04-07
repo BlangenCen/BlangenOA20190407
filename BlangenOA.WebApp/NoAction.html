@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>别乱访问</title>
+    <script src="Scripts/jquery-3.3.1.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            setInterval(function () {
+                window.location.href = "/Home/Index";
+            }, 3000);
+        });
+    </script>
+</head>
+<body>
+    没有权限就别乱访问！3秒后跳转首页
+</body>
+</html>

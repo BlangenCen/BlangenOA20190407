@@ -1,0 +1,59 @@
+﻿
+@{
+    Layout = null;
+}
+@using BlangenOA.Model
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShowUserRole</title>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script type="text/javascript">
+        //完成添加后调用的方法
+        function afterSetUserRole(data) {
+            window.parent.afterSetUserRole(data);
+        };
+        //提交表单
+        function submit() {
+            $('#setUserRoleForm').submit();
+        };
+    </script>
+</head>
+<body>
+    <div>
+        为<span style="color:red;font-size:xx-large;">@ViewBag.userInfo.UName</span>分配角色
+        <hr />
+        @using (Ajax.BeginForm("SetUserRole", "UserInfo", null, new AjaxOptions { HttpMethod = "Post", OnSuccess = "afterSetUserRole" }, new { id = "setUserRoleForm" }))
+        {
+            <input type="hidden" name="userID" value="@ViewBag.userInfo.ID" />
+            //用户已拥有的角色ID集合
+            List<int> userRoleIDList = ViewBag.userRoleInfoIDList;
+            //所有角色
+            List<RoleInfo> roleInfoList = ViewBag.roleInfoList;
+            //生成所有可选角色
+            foreach (RoleInfo roleInfo in roleInfoList)
+            {
+                var id = "roleID_" + roleInfo.ID;
+                //判断用户是否已经拥有此角色
+                if (userRoleIDList.Contains(roleInfo.ID))
+                {
+                    <label>
+                        <input name="@id" type="checkbox" checked="checked" />@roleInfo.RoleName
+                    </label>
+                    <br />
+                }
+                else
+                {
+                    <label>
+                        <input name="@id" type="checkbox" />@roleInfo.RoleName
+                    </label>
+                    <br />
+                }
+            }
+        }
+    </div>
+</body>
+</html>

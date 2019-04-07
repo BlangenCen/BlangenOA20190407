@@ -1,0 +1,287 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            text-align: center;
+            background: #4974A4;
+        }
+
+        #login {
+            width: 740px;
+            margin: 0 auto;
+            font-size: 12px;
+        }
+
+        #loginlogo {
+            width: 700px;
+            height: 100px;
+            overflow: hidden;
+            background: url('/Content/Images/login/logo.png') no-repeat;
+            margin-top: 50px;
+        }
+
+        #loginpanel {
+            width: 729px;
+            position: relative;
+            height: 500px;
+        }
+
+        .panel-h {
+            width: 729px;
+            height: 20px;
+            background: url('/Content/Images/login/panel-h.gif') no-repeat;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 3;
+        }
+
+        .panel-f {
+            width: 729px;
+            height: 13px;
+            background: url('/Content/Images/login/panel-f.gif') no-repeat;
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            z-index: 3;
+        }
+
+        .panel-c {
+            z-index: 2;
+            background: url('/Content/Images/login/panel-c.gif') repeat-y;
+            width: 729px;
+            height: 300px;
+        }
+
+        .panel-c-l {
+            position: absolute;
+            left: 60px;
+            top: 40px;
+        }
+
+        .panel-c-r {
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            width: 222px;
+            line-height: 200%;
+            text-align: left;
+        }
+
+        .panel-c-l h3 {
+            color: #556A85;
+            margin-bottom: 10px;
+        }
+
+        .panel-c-l td {
+            padding: 7px;
+        }
+
+        .login-text {
+            height: 24px;
+            left: 24px;
+            border: 1px solid #e9e9e9;
+            background: #f9f9f9;
+        }
+
+        .login-text-focus {
+            border: 1px solid #E6BF73;
+        }
+
+        .login-btn {
+            width: 114px;
+            height: 29px;
+            color: #E9FFFF;
+            line-height: 29px;
+            background: url('/Content/Images/login/login-btn.gif') no-repeat;
+            border: none;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        #txtUsername, #code, #txtPassword {
+            width: 191px;
+        }
+
+        #logincopyright {
+            text-align: center;
+            color: White;
+            margin-top: 50px;
+        }
+
+        a {
+            color: Black;
+        }
+
+            a:hover {
+                color: Red;
+                text-decoration: underline;
+            }
+
+        .error {
+            color: red;
+        }
+    </style>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <title>Blangen后台管理系统登录</title>
+    <script type="text/javascript">
+        $(function () {
+            $('#btnLogin').click(function () {
+                //校验
+                validateInfo($('#loginForm'));
+                //提交
+                $('#loginForm').submit();
+            });
+        });
+        //看不清楚,换一张(验证码)
+        function changeCheckCode() {
+            $('#img').attr('src', '/Login/ShowValidateCode?' + new Date().getMilliseconds());
+        };
+        //单击登录后调用
+        function afterLogin(data) {
+            var serverData = data.split(':');
+            if (serverData[0] == 'ok') {
+                //登录成功后先隐藏错误信息！好像藏不起来
+                $('#errorMsg').css('display', 'none');
+                window.location.href = "/Home/Index"
+            }
+            else {
+                //需要重新生成验证码！
+                changeCheckCode();
+                $('#errorMsg').text(serverData[1]).css('display', 'block');
+            }
+        };
+        //表单检验,参数为jQuery对象:$(form)
+        function validateInfo(control) {
+            control.validate({
+                //验证规则
+                rules: {
+                    LoginCode: "required",//表示对哪个表单元素进行校验，要写具体的表单元素的name属性的值
+                    LoginPwd: {
+                        required: true,
+                    },
+                    vCode: {
+                        required: true
+                    }
+                },
+                //不符合规则时,显示的提示
+                messages: {
+                    LoginCode: '请输入用户名',
+                    LoginPwd: {
+                        required: '请输入密码',
+                    },
+                    vCode: {
+                        required: '请输入验证码'
+                    }
+                }
+            });
+        };
+    </script>
+</head>
+<body style="padding: 10px">
+
+    <div id="login">
+        <div id="loginlogo">
+        </div>
+        <div id="loginpanel">
+            <div class="panel-h">
+            </div>
+            <div class="panel-c">
+                <div class="panel-c-l">
+                    @using (Ajax.BeginForm("UserLogin", "Login", null, new AjaxOptions() { HttpMethod = "Post", LoadingElementId = "divLoading", OnSuccess = "afterLogin" }, new { id = "loginForm" }))
+                    {
+                        <table cellpadding="0" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td align="left" colspan="2">
+                                        <h3>
+                                            请使用Blangen后台管理系统账号登录
+                                        </h3>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        账号：
+                                    </td>
+                                    <td align="left">
+                                        <input type="text" name="LoginCode" id="LoginCode" class="login-text" />
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        密码：
+                                    </td>
+                                    <td align="left">
+                                        <input type="password" name="LoginPwd" id="LoginPwd" class="login-text" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        验证码：
+                                    </td>
+                                    <td align="left">
+                                        <input type="text" class="login-text" id="code" name="vCode" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <img id="img" src="/Login/ShowValidateCode" style="float: left; height: 24px;" />
+                                        <div style="float: left; margin-left: 5px; margin-top: 10px;">
+                                            <a href="javascript:void(0)" onclick="changeCheckCode();return false;">看不清，换一张</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" colspan="2">
+                                        <input type="button" id="btnLogin" value="登录" class="login-btn" />
+                                        <label>
+                                            <input type="checkbox" name="autoLogin" value="1" />自动登录
+                                        </label>
+                                        <div id="errorMsg" style="font-size:14px; color:red; display:none"></div>
+                                        <div id="divLoading" style="display:none">正在登录，请稍后....</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    }
+                </div>
+                <div class="panel-c-r">
+                    <p>
+                        请从左侧输入登录账号和密码登录
+                    </p>
+                    <p>
+                        如果遇到系统问题，请联系网络管理员。
+                    </p>
+                    <p>
+                        如果没有账号，请联系网站管理员。
+                    </p>
+                    <p>
+                        ......
+                    </p>
+                </div>
+            </div>
+            <div class="panel-f">
+            </div>
+        </div>
+        <div id="logincopyright">
+            Copyright ? 2019 BlangenCen
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,98 @@
+﻿@model BlangenOA.Model.RoleInfo
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShowAdd</title>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script type="text/javascript">
+        //供父窗体提交表单用
+        function subForm() {
+            $('#addForm').submit();
+        };
+        //单击添加后
+        function afterAdd(data) {
+            //子窗体调用父窗体的方法
+            window.parent.afterAdd(data);
+        };
+        //清空添加表单
+        function clearAddForm() {
+            $('#addForm input').val('');
+        };
+        //表单检验,参数为jQuery对象:$(form)
+        function validateInfo() {
+            $('#addForm').validate({
+                //验证规则
+                rules: {
+                    RoleName: "required",//表示对哪个表单元素进行校验，要写具体的表单元素的name属性的值
+                    Remark: {
+                        required: true
+                    },
+                    Sort: {
+                        required: true
+                    }
+                },
+                //不符合规则时,显示的提示
+                messages: {
+                    RoleName: '请输入角色名',
+                    Remark: {
+                        required: '请输入备注'
+                    },
+                    Sort: {
+                        required: '请输入排序'
+                    }
+                }
+            });
+        };
+    </script>
+    <style type="text/css">
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    @using (Ajax.BeginForm("AddRoleInfo", "RoleInfo", null, new AjaxOptions { HttpMethod = "Post", OnSuccess = "afterAdd" }, new { id = "addForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>添加角色</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="form-group">
+                @Html.LabelFor(model => model.RoleName, "角色名", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.RoleName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.RoleName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Remark, "备注", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Remark, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Sort, "排序", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Sort, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Sort, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+        </div>
+    }
+</body>
+</html>

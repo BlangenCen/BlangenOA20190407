@@ -1,0 +1,60 @@
+﻿
+@{
+    Layout = null;
+    RoleInfo roleInfo = ViewBag.roleInfo;
+}
+@using BlangenOA.Model
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShowRoleAction</title>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script type="text/javascript">
+        //完成添加后调用的方法
+        function afterSetRoleAction(data) {
+            window.parent.afterSetRoleAction(data);
+        };
+        //提交表单
+        function submit() {
+            $('#setRoleActionForm').submit();
+        };
+    </script>
+</head>
+<body>
+    <div>
+        为<span style="color:red;font-size:xx-large;">@roleInfo.RoleName</span>分配权限
+        <hr />
+        @using (Ajax.BeginForm("SetRoleAction", "RoleInfo", null, new AjaxOptions { HttpMethod = "Post", OnSuccess = "afterSetRoleAction" }, new { id = "setRoleActionForm" }))
+        {
+            <input type="hidden" name="roleID" value="@roleInfo.ID" />
+            //角色已拥有的权限ID集合
+            List<int> roleActionIDList = ViewBag.roleActionIDList;
+            //所有权限
+            List<ActionInfo> actionList = ViewBag.actionList;
+            //生成所有可选权限
+            foreach (var actionInfo in actionList)
+            {
+                var id = "actionID_" + actionInfo.ID;
+                //判断用户是否已经拥有此权限
+                if (roleActionIDList.Contains(actionInfo.ID))
+                {
+                    <label>
+                        <input name="@id" type="checkbox" checked="checked" />@actionInfo.ActionInfoName
+                    </label>
+                    <br />
+                }
+                else
+                {
+                    <label>
+                        <input name="@id" type="checkbox" />@actionInfo.ActionInfoName
+                    </label>
+                    <br />
+                }
+            }
+        }
+    </div>
+</body>
+</html>

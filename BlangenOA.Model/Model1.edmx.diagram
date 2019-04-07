@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="37a6c7b338f84f0681a4d288428059ea" Name="Diagram1" ZoomLevel="85">
+        <EntityTypeShape EntityType="ItcastCmsModel.UserInfo" Width="1.5" PointX="0.625" PointY="0.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="ItcastCmsModel.ActionInfo" Width="1.5" PointX="4.625" PointY="6.125" />
+        <EntityTypeShape EntityType="ItcastCmsModel.Department" Width="1.5" PointX="7.375" PointY="5.5" />
+        <EntityTypeShape EntityType="ItcastCmsModel.R_UserInfo_ActionInfo" Width="1.5" PointX="0.625" PointY="5.125" />
+        <EntityTypeShape EntityType="ItcastCmsModel.RoleInfo" Width="1.5" PointX="4.75" PointY="2.875" />
+        <AssociationConnector Association="ItcastCmsModel.FK_ActionInfoR_UserInfo_ActionInfo" />
+        <AssociationConnector Association="ItcastCmsModel.FK_UserInfoR_UserInfo_ActionInfo" />
+        <AssociationConnector Association="ItcastCmsModel.DepartmentActionInfo" />
+        <AssociationConnector Association="ItcastCmsModel.RoleInfoActionInfo" />
+        <AssociationConnector Association="ItcastCmsModel.UserInfoDepartment" />
+        <AssociationConnector Association="ItcastCmsModel.UserInfoRoleInfo" />
+        <EntityTypeShape EntityType="ItcastCmsModel.Books" Width="1.5" PointX="10" PointY="0.875" />
+        <EntityTypeShape EntityType="ItcastCmsModel.KeyWordsRank" Width="1.5" PointX="12.25" PointY="1.25" />
+        <EntityTypeShape EntityType="ItcastCmsModel.SearchDetails" Width="1.5" PointX="12.375" PointY="3.125" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
